@@ -3,7 +3,7 @@ import Home from './Home';
 import Authentication from './Authentication';
 import { UsercontextProvider } from './context/UserContext';
 import axios from 'axios';
-import Chats from './chat/Chats';
+import Chatpage from './chat/Chatpage';
 function App() {
 
   axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
@@ -15,7 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Authentication />} />
-        <Route path="/chat" element={<Chats />} />
+        <Route path="/chat" element={<Chatpage />} />
       </Routes>
       </UsercontextProvider>
     </BrowserRouter>

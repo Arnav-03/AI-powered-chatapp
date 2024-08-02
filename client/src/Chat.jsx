@@ -31,7 +31,7 @@ const Chat = () => {
     const { username, id, setid, setusername } = useContext(UserContext);
     const [People, setPeople] = useState({});
     const divUnderMEssage = useRef(null);
-    const [sidebarVisible, setSidebarVisible] = useState(true); // State to manage sidebar visibility
+    const [sidebarVisible, setSidebarVisible] = useState(true); 
     const [showsearch, setshowsearch] = useState(false);
     const [storedTimestamp, setStoredTimestamp] = useState(null);
     const [unreadMessages, setUnreadMessages] = useState({});
