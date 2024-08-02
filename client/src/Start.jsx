@@ -1,5 +1,6 @@
 import React from 'react';
 import arrow from './assets/arrow.png';
+import GoogleSignIN from './GoogleSignIN';
 const Start = () => {
   const textStyle = {
     fontFamily: "'Qwigley', cursive",

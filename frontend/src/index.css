@@ -83,13 +83,13 @@ opacity: 0; }
 }
 
 .backg{
-/*   border: 2px solid #854343;
- */  padding: 50px;
+  margin: 50px;
 
 }
 .backg input{
   border-radius: 5px;
-  border: 2px solid #364954;
+  min-width: 250px;
+  border: 2px solid #db0847;
   outline: none;
 }
 

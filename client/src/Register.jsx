@@ -85,10 +85,13 @@ const Register = () => {
                     </div>
 
                     <div className='flex justify-end m-0 mt-[100px] mr-[20px] lg:mt-[2px] lg:mr-[150px]'>
-                        <button class="button" onClick={handleButtonClick} >
+                        <button className="button" onClick={handleButtonClick} >
                             get started
                         </button>
                     </div>
+                    <div className="">
+          <GoogleSignIN/>
+        </div>
                 </div>
             )}
 
