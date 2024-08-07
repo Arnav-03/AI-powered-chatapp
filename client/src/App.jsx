@@ -10,7 +10,7 @@ function App() {
 
   return (
     <UsercontextProvider>
-      <Home />
+      <Routes />
     </UsercontextProvider>
   );
 }

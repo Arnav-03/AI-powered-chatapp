@@ -10,9 +10,7 @@ const Routes = () => {
         return <Chat />;
     }
   return (
-/*     <Register />
- */ 
-      <Home/>
- )
+    <Register />
+  )
 }
 export default Routes

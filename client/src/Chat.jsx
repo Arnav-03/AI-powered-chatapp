@@ -31,7 +31,7 @@ const Chat = () => {
     const { username, id, setid, setusername } = useContext(UserContext);
     const [People, setPeople] = useState({});
     const divUnderMEssage = useRef(null);
-    const [sidebarVisible, setSidebarVisible] = useState(true); 
+    const [sidebarVisible, setSidebarVisible] = useState(true);
     const [showsearch, setshowsearch] = useState(false);
     const [storedTimestamp, setStoredTimestamp] = useState(null);
     const [unreadMessages, setUnreadMessages] = useState({});
@@ -84,29 +84,10 @@ const Chat = () => {
     }, [selectedUser, id, onlinePeople, People, messages, newMessage]);
 
     const [nhk, setnhk] = useState(false);
-    /*     function handlemessage(e) {
-            const messageData = JSON.parse(e.data);
-    
-    
-            if (typeof messageData === 'object' && 'online' in messageData) {
-                showPeople(messageData.online);
-            } else if ('text' in messageData) {
-                const isMessageForSelectedUser = messageData.sender === selectedUser || messageData.recipient === selectedUser;
-    
-                if (isMessageForSelectedUser) {
-                    setMessages(prevMessages => [...prevMessages, { ...messageData, isOur: false }]);
-                    setnhk(prevnhk => !prevnhk);
-                    setTimeout(() => {
-                        setnhk(prevnhk => !prevnhk);
-    
-                    }, 1000);
-                }
-    
-            }
-        } */
-        const showPeople = (onlineData) => {
-           
-        };
+
+    const showPeople = (onlineData) => {
+
+    };
     function handlemessage(e) {
         const messageData = JSON.parse(e.data);
 
@@ -457,8 +438,8 @@ const Chat = () => {
 
             if (lastMessage) {
                 const { createdAt } = lastMessage;
-              /*   const messageTime = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); */
-              const messageTime = new Date(createdAt).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                /*   const messageTime = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); */
+                const messageTime = new Date(createdAt).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 
                 return messageTime;
             }
@@ -472,11 +453,11 @@ const Chat = () => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                if(selectedUser!==null){
+                if (selectedUser !== null) {
                     const response = await axios.get(`/messages/${selectedUser}`);
                     setMessages(response.data);
                 }
-            
+
             } catch (error) {
                 console.error('Error fetching messages:', error.message);
             }
@@ -496,7 +477,7 @@ const Chat = () => {
         };
 
         fetchLastMessageTimes();
-    }, [People,messages,selectedUser]);
+    }, [People, messages, selectedUser]);
 
     return (
 
@@ -620,32 +601,6 @@ const Chat = () => {
 
                     </div>)}
                 </div>
-                {/*       <div
-                    className="overflow-y-auto mm-5 h-full">
-                    {
-                        Object.values(People).map((user) => (
-                            <div onClick={() => { setselectedUser(user._id); handleBackArrowClick(); setscrollonclick(prevscrollonclick => !prevscrollonclick); }}
-                                key={user._id}
-                                className={`cursor-pointer flex flex-row overflow-hidden  my-1   h-11 font-bold px-3 py-2.5 text-lg  md:text-[15px] lg:text-xl  rounded-r-[10px] ${user._id === selectedUser ? `${lavenderTheme.username_theme_selected}` : `${lavenderTheme.username_theme_not_selected}`}`}
-                            >
-
-                                <div
-                                    className={`${user._id === selectedUser
-                                        ? `${lavenderTheme.alphabet_theme_selected}`
-                                        : `${lavenderTheme.alphabet_theme_not_selected}`
-                                        } h-8 capitalize w-8 rounded-full px-1.5 py-0 mr-5 mt-[-5px] text-m text-center`}
-                                >
-                                    {user.username[0]}
-                                </div>
-                                <span className='mt-[-3px] md:mt-[-5px] '> {user.username} </span>
-                            </div>
-                        ))
-
-                    }
-
-
-
-                </div> */}
 
                 <div className="overflow-y-auto mm-5 h-full">
                     {Object.values(People).map((user) => (

@@ -90,7 +90,6 @@ const Register = () => {
                         </button>
                     </div>
                     <div className="">
-          <GoogleSignIN/>
         </div>
                 </div>
             )}

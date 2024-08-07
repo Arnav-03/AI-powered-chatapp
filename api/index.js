@@ -41,7 +41,6 @@ async function getUserDataFromRequest(req) {
             reject('no token');
         }
     })
-
 }
 
 app.get('/api/test', (req, res) => {
@@ -57,8 +56,8 @@ app.get('/api/messages/:userId', async (req, res) => {
         recipient: { $in: [userId, ourUSerId] },
     }).sort({ createdAt: 1 });
     res.json(messages);
-
 });
+
 app.get('/api/lastmessage/:userId', async (req, res) => {
     const { userId } = req.params;
     const userData = await getUserDataFromRequest(req);
@@ -72,7 +71,6 @@ app.get('/api/lastmessage/:userId', async (req, res) => {
         .sort({ createdAt: -1 }) // Sort in descending order
         .limit(1);
         
-
     res.json(lastMessage);
 });
 
@@ -90,13 +88,10 @@ app.get('/api/people', async (req, res) => {
         const usersSentTo = messagesSentByUser.map(message => message.recipient.toString());
         const usersReceivedFrom = messagesReceivedByUser.map(message => message.sender.toString());
 
-        // Combine and deduplicate the user IDs
         const uniqueUserIds = [...new Set([...usersSentTo, ...usersReceivedFrom])];
 
-        // Fetch user details for the unique user IDs
         const users = await User.find({ _id: { $in: uniqueUserIds } }, { _id: 1, username: 1 });
 
-        // Sort the users based on interaction timestamp (latest to oldest)
         const usersSortedByTime = users.sort((a, b) => {
             const lastInteractionTimeA = Math.max(
                 messagesSentByUser.find(msg => msg.recipient.toString() === a._id.toString())?.createdAt || 0,
@@ -116,8 +111,6 @@ app.get('/api/people', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
 
 app.get('/api/allpeople', async (req, res) => {
     const searchTerm = req.query.searchTerm;
@@ -147,10 +140,6 @@ app.get('/api/allpeople', async (req, res) => {
     }
 });
 
-
-
-
-
 app.get('/api/profile', (req, res) => {
     const token = req.cookies?.token;
     if (token) {
@@ -162,7 +151,6 @@ app.get('/api/profile', (req, res) => {
         res.status(401).json('no token');
     }
 });
-
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
@@ -194,10 +182,8 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.post('/api/logout', (req, res) => {
-
     res.cookie('token', '', { sameSite: 'none', secure: true }).json('logout');
 });
-
 
 async function checkUserExists(username) {
     try {
@@ -208,6 +194,7 @@ async function checkUserExists(username) {
         return false;
     }
 }
+
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
 
@@ -239,77 +226,77 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-
-
-
 const server = app.listen(4040);
-
-
-
 
 const wss = new ws.WebSocketServer({ server });
 wss.on('connection', (connection, req) => {
-
-    function messageAboutOnlinePeople() {
-        [...wss.clients].forEach(client => {
-            client.send(JSON.stringify({
-                online: [...wss.clients].map(c => ({ userId: c.userId, username: c.username }))
-
-            }
-            ));
-        });
-
-    }
-
-    connection.on('pong', () => {
-    });
-
+    // Extract token from cookies
     const cookies = req.headers.cookie;
     if (cookies) {
-        const tokencookieString = cookies.split(';').find(str => str.startsWith('token='));
-        if (tokencookieString) {
-            const token = tokencookieString.split('=')[1];
+        const tokenCookieString = cookies.split(';').find(str => str.trim().startsWith('token='));
+        if (tokenCookieString) {
+            const token = tokenCookieString.split('=')[1];
             if (token) {
                 jwt.verify(token, jwtSecret, {}, (err, userData) => {
-                    if (err) throw err;
+                    if (err) {
+                        console.error('JWT verification error:', err);
+                        return; // Exit if token verification fails
+                    }
                     const { userId, username } = userData;
                     connection.userId = userId;
                     connection.username = username;
+                    console.log('User connected:', userId, username); // Log successful connection
 
+                    // Notify others about online people
+                    messageAboutOnlinePeople();
                 });
+            } else {
+                console.error('Token not found in cookie string.');
             }
+        } else {
+            console.error('Token cookie string not found.');
         }
+    } else {
+        console.error('No cookies found in headers.');
     }
+
+    connection.isAlive = true;
+    connection.timer = setInterval(() => {
+        connection.ping();
+        connection.deathTimer = setTimeout(() => {
+            connection.isAlive = false;
+            clearInterval(connection.timer);
+            connection.terminate();
+            messageAboutOnlinePeople();
+            console.log('dead');
+        }, 1000);
+    }, 5000);
+
+    connection.on('pong', () => {
+        clearTimeout(connection.deathTimer);
+    });
 
     connection.on('message', async (message) => {
         const messageData = JSON.parse(message.toString());
         const { recipient, text, file } = messageData;
         let filename = null;
-
         if (file) {
             const parts = file.name.split('.');
             const ext = parts[parts.length - 1];
             filename = Date.now() + '.' + ext;
             const path = __dirname + '/uploads/' + filename;
-
-            const bufferData = Buffer.from(file.data.split(',')[1], 'base64'); // Use Buffer.from() instead
-
-            fs.writeFile(path, bufferData, (err) => {
-                if (err) {
-                    console.error('Error saving file:', err);
-                } else {
-                    console.log('File saved at:', path);
-                }
+            const bufferData = Buffer.from(file.data.split(',')[1], 'base64');
+            fs.writeFile(path, bufferData, () => {
+                console.log('file saved:' + path);
             });
         }
-    
+        console.log(connection.userId);
         if (recipient && (text || file)) {
-            const MessageDoc = await Message.create({
+            const messageDoc = await Message.create({
                 sender: connection.userId,
                 recipient,
                 text,
                 file: file ? filename : null,
-
             });
             [...wss.clients]
                 .filter(c => c.userId === recipient)
@@ -318,19 +305,21 @@ wss.on('connection', (connection, req) => {
                     sender: connection.userId,
                     recipient,
                     file: file ? filename : null,
-
-                    _id: MessageDoc._id,
+                    _id: messageDoc._id,
                 })));
         }
     });
 
+    function messageAboutOnlinePeople() {
+        [...wss.clients].forEach(client => {
+            client.send(JSON.stringify({
+                online: [...wss.clients].map(c => ({ userId: c.userId, username: c.username })),
+            }));
+        });
+    }
 
-
-
+    // Notify others about online people when a new client connects
     messageAboutOnlinePeople();
-
 });
 
-wss.on('close', data => {
-    console.log('disconnect', data);
-})
+console.log("app running on 4040");
