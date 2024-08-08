@@ -8,8 +8,9 @@ import Chat from './Chat';
 import MessageBox from './MessageBox';
 import backarrow from '../assets/backarrow.png';
 import NoChat from './NoChat';
-import cross from '../../src/assets/cross.png';
-import account from '../../src/assets/account.png';
+import * as themes from '../chat/Colors'
+import Search from './Search';
+
 
 function Chats() {
     const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth > 768);
@@ -21,6 +22,8 @@ function Chats() {
     const [newMessage, setnewMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [People, setPeople] = useState({});
+    const [colortheme, setcolortheme] = useState("default_theme");
+    const allThemes = themes;
 
     useEffect(() => {
         const handleResize = () => {
@@ -69,7 +72,7 @@ function Chats() {
             }
         }
     }
-    
+
     useEffect(() => {
         axios.get('/people').then(res => {
             const PeopleArr = res.data.filter(p => p._id !== id)
@@ -170,7 +173,6 @@ function Chats() {
     }
 
 
-    const [showsearch, setshowsearch] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
 
@@ -188,9 +190,7 @@ function Chats() {
                 const filteredUsers = users.filter(user => user.username !== searcherUsername);
 
                 setSearchResults(filteredUsers);
-                console.log(filteredUsers);
             } else {
-                console.log("no user found");
                 setSearchResults([]);
             }
         } catch (error) {
@@ -199,56 +199,13 @@ function Chats() {
     };
 
     return (
-        <div className='flex items-center justify-center h-screen w-full'>
+        <div className='flex items-center justify-center h-screen w-full bg-[#f0efec]'>
             {isLargeScreen || currentView === 'first' ? (
-                <div className="w-full md:w-1/3 h-full flex flex-col items-center justify-center">
-                    <div className="h-[120px] w-full border-2 border-black">
-                        <User username={username} />
-                    </div>
-                    {showsearch && (
-                        <div>
-                            <div className="flex flex-row">
-                                <input
-                                    className={` bg-transparent  border-[1px] rounded-[10px] font-mono h-9 outline-none  w-full  p-3 pl-10 pr-10 m-2 ml-0 mb-1 font-bold`}
-                                    type="text"
-                                    placeholder="Search by username..."
-                                    value={searchTerm}
-                                    onChange={(e) => handleSearch(e)}
-                                />
-                                <img onClick={() => { setshowsearch(false) }} className={`h-[30px] mt-[10px] rounded-[10px] ml-[-43px]`} src={cross}></img>
-                            </div>
-
-                            {searchTerm.length > 0 && (
-                                <ul className={`
-                                    bg-transparent rounded-[10px] p-3 mb-4 w-full border-[1px]  overflow-scroll max-h-[200px]`}>
-                                    {searchResults.length > 0 ? (
-                                        searchResults.map((user) => (
-                                            <li
-                                                className={`flex flex-row cursor-pointer overflow-hidden font-mono lg:text-[20px] sm:text-[12px] font-bold`}
-                                                key={user.id}
-                                                onClick={() => {
-                                                    setselectedUser(user._id);
-                                                    handleViewChange('second');
-                                                }}
-                                            >
-                                                <img
-                                                    className='lg:h-[25px] min-[320px]:h-[20px] mt-[3px] rounded-full m-[3px] mr-4'
-                                                    src={account}
-                                                    alt='Account'
-                                                />
-                                                {user.username}
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <div className="flex justify-center">
-                                            <li className={`border-b-2 font-mono font-bold`}>No User found !!!</li>
-                                        </div>
-                                    )}
-                                </ul>
-                            )}
-                        </div>
-                    )}
-                    <div className="h-full w-full border-2 border-black">
+                <div className="w-full md:w-1/3 h-full flex flex-col items-center justify-center ">
+                    <User username={username} />
+                    <Search handleSearch={handleSearch}
+                        searchTerm={searchTerm} handleViewChange={handleViewChange} setselectedUser={setselectedUser} searchResults={searchResults} />
+                    <div className="h-full w-full overflow-hidden ">
                         <PeopleList
                             setMessages={setMessages}
                             handleViewChange={handleViewChange}
@@ -287,5 +244,4 @@ function Chats() {
         </div>
     );
 }
-
 export default Chats;

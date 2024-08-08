@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
-async function getUserDataFromRequest(req) {
+/* async function getUserDataFromRequest(req) {
     return new Promise((resolve, reject) => {
         const token = req.cookies?.token;
         if (token) {
@@ -41,13 +41,31 @@ async function getUserDataFromRequest(req) {
             reject('no token');
         }
     })
-}
-
+} */
+    async function getUserDataFromRequest(req) {
+        return new Promise((resolve, reject) => {
+            const token = req.cookies?.token;
+            if (token) {
+                jwt.verify(token, jwtSecret, {}, (err, userData) => {
+                    if (err) {
+                        console.log('Token verification error:', err);
+                        reject('Invalid token');
+                        return;
+                    }
+                    resolve(userData);
+                });
+            } else {
+                console.log('No token provided');
+                reject('No token provided');
+            }
+        });
+    }
+    
 app.get('/api/test', (req, res) => {
     res.json('test hehhee');
 });
 
-app.get('/api/messages/:userId', async (req, res) => {
+/* app.get('/api/messages/:userId', async (req, res) => {
     const { userId } = req.params;
     const userData = await getUserDataFromRequest(req);
     const ourUSerId = userData.userId;
@@ -56,7 +74,23 @@ app.get('/api/messages/:userId', async (req, res) => {
         recipient: { $in: [userId, ourUSerId] },
     }).sort({ createdAt: 1 });
     res.json(messages);
+}); */
+app.get('/api/messages/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const userData = await getUserDataFromRequest(req);
+        const ourUserId = userData.userId;
+        const messages = await Message.find({
+            sender: { $in: [userId, ourUserId] },
+            recipient: { $in: [userId, ourUserId] },
+        }).sort({ createdAt: 1 });
+        res.json(messages);
+    } catch (error) {
+        console.log('Error fetching messages:', error);
+        res.status(401).json({ error });
+    }
 });
+
 
 app.get('/api/lastmessage/:userId', async (req, res) => {
     const { userId } = req.params;
@@ -140,11 +174,25 @@ app.get('/api/allpeople', async (req, res) => {
     }
 });
 
-app.get('/api/profile', (req, res) => {
+/* app.get('/api/profile', (req, res) => {
     const token = req.cookies?.token;
     if (token) {
         jwt.verify(token, jwtSecret, {}, (err, userData) => {
             if (err) throw err;
+            res.json(userData);
+        });
+    } else {
+        res.status(401).json('no token');
+    }
+}); */
+app.get('/api/profile', (req, res) => {
+    const token = req.cookies?.token;
+    if (token) {
+        jwt.verify(token, jwtSecret, {}, (err, userData) => {
+            if (err) {
+                console.error('JWT verification error:', err);
+                return res.status(401).json({ error: 'Invalid token' });
+            }
             res.json(userData);
         });
     } else {
@@ -180,6 +228,7 @@ app.post('/api/login', async (req, res) => {
         res.status(401).json({ error: err.message });
     }
 });
+
 
 app.post('/api/logout', (req, res) => {
     res.cookie('token', '', { sameSite: 'none', secure: true }).json('logout');
