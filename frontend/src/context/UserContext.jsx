@@ -9,7 +9,7 @@ export function UsercontextProvider({ children }) {
   const [username, setusername] = useState(null);
   const [id, setid] = useState(null);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     axios.get('/profile').then(response => {
       setid(response.data.userId);

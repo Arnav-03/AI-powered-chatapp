@@ -289,7 +289,7 @@ function Chats() {
     }, [files])
 
     return (
-        <div className='flex items-center justify-center h-screen w-full bg-[#f0efec]'>
+        <div className='flex items-center  justify-center h-screen w-full bg-[#f0efec]'>
             {isLargeScreen || currentView === 'first' ? (
                 <div className="w-full md:w-1/3 h-full flex flex-col items-center justify-center ">
                     <User username={username} />
@@ -310,8 +310,8 @@ function Chats() {
 
             {isLargeScreen || currentView === 'second' ? (
                 selectedUser ? (
-                    <div className="w-full md:w-2/3 h-full flex flex-col relative">
-                        <div className="top-0">
+                    <div className="w-full  md:w-2/3 h-full flex flex-col relative">
+                        <div className="">
                             <OtherPerson handleViewChange={handleViewChange} setselectedUser={setselectedUser}
                                 name={selectedUserName} />
                         </div>

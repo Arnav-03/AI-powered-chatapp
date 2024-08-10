@@ -199,8 +199,41 @@ app.get('/api/profile', (req, res) => {
         res.status(401).json('no token');
     }
 });
-
 app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const foundUser = await User.findOne({ username });
+
+        if (!foundUser) {
+            throw new Error('Invalid username or password');
+        }
+
+        if (foundUser.googlesignin) {
+            throw new Error('This account was created using Google. Please log in using Google sign-in.');
+        }
+
+        const passOk = bcrypt.compareSync(password, foundUser.password);
+        if (!passOk) {
+            throw new Error('Invalid username or password');
+        }
+
+        jwt.sign({ userId: foundUser._id, username }, jwtSecret, {}, (err, token) => {
+            if (err) {
+                throw err;
+            }
+
+            res.cookie('token', token, { sameSite: 'none', secure: true }).json({
+                id: foundUser._id,
+            });
+        });
+    } catch (err) {
+        console.error('Login error:', err.message);
+        res.status(401).json({ error: err.message });
+    }
+});
+
+/* app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const foundUser = await User.findOne({ username });
     
@@ -228,7 +261,7 @@ app.post('/api/login', async (req, res) => {
         res.status(401).json({ error: err.message });
     }
 });
-
+ */
 
 app.post('/api/logout', (req, res) => {
     res.cookie('token', '', { sameSite: 'none', secure: true }).json('logout');
@@ -243,6 +276,91 @@ async function checkUserExists(username) {
         return false;
     }
 }
+app.post('/api/googleauth', async (req, res) => {
+    try {
+        const { username, email, imageurl } = req.body;
+        const useralreadyexist = await User.findOne({ email });
+
+        if (useralreadyexist) {
+            if (!useralreadyexist.googlesignin) {
+                return res.status(400).json({ error: 'This email is associated with an account created using credentials. Please log in using your username and password.' });
+            }
+
+            // If the user exists and is a Google sign-in user, proceed with token generation
+            jwt.sign({ userId: useralreadyexist._id, username }, jwtSecret, {}, (err, token) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error generating token' });
+                }
+                res.cookie('token', token, { sameSite: 'none', secure: true }).json({
+                    id: useralreadyexist._id,
+                    username: useralreadyexist.username
+                });
+            });
+        } else {
+            // If no user exists, create a new Google sign-in user
+            const createdUser = await User.create({
+                username: username,
+                email: email,
+                image: imageurl,
+                googlesignin: true,
+                password: "", 
+            });
+
+            jwt.sign({ userId: createdUser._id, username }, jwtSecret, {}, (err, token) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error generating token' });
+                }
+                res.cookie('token', token, { sameSite: 'none', secure: true }).status(201).json({
+                    id: createdUser._id,
+                    username: createdUser.username
+                });
+            });
+        }
+    } catch (err) {
+        console.error('Error in /api/googleauth:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+/* app.post('/api/googleauth', async (req, res) => {
+    try {
+        const { username, email, imageurl } = req.body;
+        const useralreadyexist = await User.findOne({ email });
+
+        if (useralreadyexist) {
+            jwt.sign({ userId: useralreadyexist._id, username }, jwtSecret, {}, (err, token) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error generating token' });
+                }
+                res.cookie('token', token, { sameSite: 'none', secure: true }).json({
+                    id: useralreadyexist._id,
+                    username: useralreadyexist.username
+                });
+            });
+        } else {
+            const createdUser = await User.create({
+                username: username,
+                email: email,
+                image: imageurl,
+                googlesignin: true,
+                password: "", 
+            });
+
+            jwt.sign({ userId: createdUser._id, username }, jwtSecret, {}, (err, token) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error generating token' });
+                }
+                res.cookie('token', token, { sameSite: 'none', secure: true }).status(201).json({
+                    id: createdUser._id,
+                    username: createdUser.username
+                });
+            });
+        }
+    } catch (err) {
+        console.error('Error in /api/googleauth:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}); */
 
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
