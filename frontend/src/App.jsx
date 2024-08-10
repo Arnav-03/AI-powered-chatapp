@@ -8,14 +8,12 @@ import { FileProvider } from './context/FileContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
-
   axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
   axios.defaults.withCredentials = true;
-
   return (
     <div className="h-screen">
     <BrowserRouter>
-    <GoogleOAuthProvider clientId="67929959631-fmm7bc79t0d94osga1rvsdmrk88ugroj.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT}>
     <UsercontextProvider>
       <FileProvider>
       <Routes>
@@ -30,5 +28,4 @@ function App() {
     </div>
   );
 }
-
 export default App;

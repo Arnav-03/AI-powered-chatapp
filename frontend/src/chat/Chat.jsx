@@ -123,7 +123,7 @@ function Chat({ id, messages, selectedUser }) {
                     <div className={`underline flex ${message.sender===id?"justify-end":"justify-start"} text-center italic cursor-pointer`}>
                       <a target='_blank' href={fileInfo.link} rel="noopener noreferrer">
                         <img
-                          className='h-[100px] w-[100px] m-0 p-0 rounded-xl'
+                          className='h-[100px] w-auto  m-0 p-0 rounded-xl'
                           src={getImageForFileType(fileInfo.name,fileInfo.link)}
                           alt='File preview'
                         />
