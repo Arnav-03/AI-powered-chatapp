@@ -25,7 +25,7 @@ function App() {
       </Routes>
       </FileProvider>
       </UsercontextProvider>
-      </GoogleOAuthProvider>;
+      </GoogleOAuthProvider>
     </BrowserRouter>
     </div>
   );
