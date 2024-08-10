@@ -13,7 +13,7 @@ const Start = () => {
   }
   return (
     <div className='bg-[#364954] border-l-2 border-[#d9cce2] h-screen flex flex-col items-center justify-center'>
-      <div style={textStyle2} className="text-[#d9cce2] text-6xl mb-5"> KASHITOKARU</div>
+      <div  className="text-[#d9cce2] text-6xl mb-5 kktitle"> KASHITOKARU</div>
       <div className="text-[#13090a] text-4xl text-center " style={textStyle}>
         The Art of Conversation, Redefined...
       </div>

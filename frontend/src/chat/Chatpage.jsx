@@ -10,6 +10,8 @@ import backarrow from '../assets/backarrow.png';
 import NoChat from './NoChat';
 import * as themes from '../chat/Colors'
 import Search from './Search';
+import FilePreview from './FilePreview';
+import { useFileContext } from '../context/FileContext';
 
 
 function Chats() {
@@ -136,43 +138,124 @@ function Chats() {
         setselectedUserName(People[selectedUser]?.username)
     }, [selectedUser, People]);
 
-    function sendMessage(e) {
-        if (e) e.preventDefault();
-
-        const createdAt = new Date();
-        const day = createdAt.toLocaleDateString('en-US');
-        const time = createdAt.toLocaleTimeString('en-US');
-
-        if (!newMessage.trim()) {
-            return;
+    /*     function sendMessage(e) {
+            if (e) e.preventDefault();
+    
+            const createdAt = new Date();
+            const day = createdAt.toLocaleDateString('en-US');
+            const time = createdAt.toLocaleTimeString('en-US');
+    
+            if (!newMessage.trim()) {
+                return;
+            }
+    
+            ws.send(JSON.stringify({
+                day,
+                time,
+                recipient: selectedUser,
+                text: newMessage,
+                isRead: false,
+                createdAt,
+            }));
+    
+            setnewMessage('');
+            const newMessageData = {
+                day,
+                time,
+                text: newMessage,
+                sender: id,
+                isRead: false,
+                recipient: selectedUser,
+                _id: Date.now(),
+                isOur: true,
+                createdAt,
+            };
+    
+            setMessages(prev => ([...prev, newMessageData]));
         }
-
-        ws.send(JSON.stringify({
-            day,
-            time,
-            recipient: selectedUser,
-            text: newMessage,
-            isRead: false,
-            createdAt,
-        }));
-
-        setnewMessage('');
-        const newMessageData = {
-            day,
-            time,
-            text: newMessage,
-            sender: id,
-            isRead: false,
-            recipient: selectedUser,
-            _id: Date.now(),
-            isOur: true,
-            createdAt,
-        };
-
-        setMessages(prev => ([...prev, newMessageData]));
-    }
+     */
 
 
+        function sendMessage(e, file = null) {
+            if (e) e.preventDefault();
+        
+            const createdAt = new Date();
+            const day = createdAt.toLocaleDateString('en-US');
+            const time = createdAt.toLocaleTimeString('en-US');
+            
+            let fileData = null;
+            if (file) {
+                console.log("File data being sent:", file.name, file.link);
+        
+                const fileData = {
+                    name: file.name,
+                    link: file.link,
+                    type: file.type
+                };
+                
+                // Convert the fileData object to a JSON string
+                const fileDataString = JSON.stringify(fileData);
+                
+        
+                // Send the file message
+                ws.send(JSON.stringify({
+                    day,
+                    time,
+                    recipient: selectedUser,
+                    file: fileDataString, // Correct structure
+                    text: file.name,
+                    isRead: false,
+                    createdAt,
+                }));
+                
+                setnewMessage('');
+        
+                setMessages(prev => ([
+                    ...prev,
+                    {
+                        day,
+                        time,
+                        text: file.name,
+                        file: fileDataString, // Correct structure
+                        sender: id,
+                        isRead: false,
+                        recipient: selectedUser,
+                        _id: Date.now(),
+                        isOur: true,
+                        createdAt,
+                    }
+                ]));
+            } else {
+                if (!newMessage.trim()) {
+                    return;
+                }
+        
+                ws.send(JSON.stringify({
+                    day,
+                    time,
+                    recipient: selectedUser,
+                    text: newMessage,
+                    isRead: false,
+                    createdAt,
+                }));
+        
+                setnewMessage('');
+                const newMessageData = {
+                    day,
+                    time,
+                    text: newMessage,
+                    sender: id,
+                    isRead: false,
+                    recipient: selectedUser,
+                    _id: Date.now(),
+                    isOur: true,
+                    createdAt,
+                };
+        
+                setMessages(prev => ([...prev, newMessageData]));
+            }
+        }
+        
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
 
@@ -197,6 +280,13 @@ function Chats() {
             console.error('Error fetching search results:', error);
         }
     };
+    const [showfiless, setshowfiless] = useState(false);
+    const { files } = useFileContext();
+    useEffect(() => {
+        if (files.length === 0) {
+            setshowfiless(false);
+        }
+    }, [files])
 
     return (
         <div className='flex items-center justify-center h-screen w-full bg-[#f0efec]'>
@@ -207,6 +297,7 @@ function Chats() {
                         searchTerm={searchTerm} handleViewChange={handleViewChange} setselectedUser={setselectedUser} searchResults={searchResults} />
                     <div className="h-full w-full overflow-hidden ">
                         <PeopleList
+                            selectedUser={selectedUser}
                             setMessages={setMessages}
                             handleViewChange={handleViewChange}
                             People={People}
@@ -219,21 +310,23 @@ function Chats() {
 
             {isLargeScreen || currentView === 'second' ? (
                 selectedUser ? (
-                    <div className="w-full md:w-2/3 h-full flex flex-col">
-                        <div className="h-[100px] border-2 w-full border-black flex items-center">
-                            <div onClick={() => handleViewChange('first')} className="bg-black p-1 cursor-pointer">
-                                <img src={backarrow} alt="Back Arrow" className='h-12 w-12' />
+                    <div className="w-full md:w-2/3 h-full flex flex-col relative">
+                        <div className="top-0">
+                            <OtherPerson handleViewChange={handleViewChange} setselectedUser={setselectedUser}
+                                name={selectedUserName} />
+                        </div>
+
+                        <div className="h-full border-2 overflow-hidden border-[#292929] border-l-2">
+                            <Chat id={id} messages={messages} selectedUser={selectedUser} />
+                        </div>
+                        {showfiless && (
+                            <FilePreview sendMessage={sendMessage} name={selectedUserName} />
+                        )}
+                        {!showfiless && (
+                            <div className="h-[75px] border-2 border-t-0 border-[#292929]">
+                                <MessageBox setshowfiless={setshowfiless} sendMessage={sendMessage} newMessage={newMessage} setnewMessage={setnewMessage} />
                             </div>
-                            <div className="flex items-center justify-center ml-[200px]">
-                                <OtherPerson name={selectedUserName} />
-                            </div>
-                        </div>
-                        <div className="h-full border-2 overflow-hidden border-black">
-                            <Chat messages={messages} selectedUser={selectedUser} />
-                        </div>
-                        <div className="h-[75px] border-2 border-black">
-                            <MessageBox sendMessage={sendMessage} newMessage={newMessage} setnewMessage={setnewMessage} />
-                        </div>
+                        )}
                     </div>
                 ) : (
                     <div className="w-full md:w-2/3 h-full flex flex-col">

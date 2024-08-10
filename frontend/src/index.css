@@ -20,6 +20,35 @@ body{
   box-sizing: border-box;
 
 }
+.kktitle {
+  font-family: 'Major Mono Display', monospace;
+}
+.red-wave-text {
+  background: linear-gradient(
+    to right,
+    #d9cce2 20%,
+    rgb(100, 94, 94) 40%,
+    #d9cce2 60%
+  );
+  background-size: 200% 100%;
+  background-position: -100%;
+  
+  -webkit-background-clip: text; 
+  background-clip: text; 
+  -webkit-text-fill-color: transparent;  
+  animation: redWave 1s ease-in-out infinite;
+}
+
+@keyframes redWave {
+  0% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: 0%;
+  }
+}
+
+
 @keyframes flicker {
   0%, 49.9% {
 opacity: 0; }
@@ -33,7 +62,7 @@ opacity: 0; }
 
 /* width */
 ::-webkit-scrollbar {
-    width: 2px;
+    width: 5px;
   }
   /* Track */
   ::-webkit-scrollbar-track {
@@ -122,4 +151,19 @@ opacity: 0; }
   font-optical-sizing: auto;
   font-weight: 600;
   font-style: normal;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slideUp {
+  animation: slideUp 0.4s ease-out forwards;
 }

@@ -1,15 +1,22 @@
 const mongoose = require("mongoose");
 
+
 const MessageSchema = new mongoose.Schema({
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     text: String,
-    day: String, // Separate field for day
-    time: String, // Separate field for time
-    file: String,
-    createdAt: { type: Date, default: Date.now }, // Manually define createdAt field
-    updatedAt: { type: Date, default: Date.now } // Manually define updatedAt field
+    day: String,
+    time: String,
+    file: {
+        name: String,
+        link: String,
+        type: String
+    },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
 });
+
+
 
 // Pre-hook to populate day and time before saving
 MessageSchema.pre('save', function (next) {
@@ -22,33 +29,3 @@ MessageSchema.pre('save', function (next) {
 const MessageModel = mongoose.model('Message', MessageSchema);
 module.exports = MessageModel;
 
-
-
-
-/* const mongoose = require("mongoose");
-
-const MessageSchema = new mongoose.Schema({
-
-    sender:{type: mongoose.Schema.Types.ObjectId,ref: 'User'},
-    recipient:{type: mongoose.Schema.Types.ObjectId,ref: 'User'},
-    text:String,
-    file:String,
-
-},{timestamps:true});
-
-const MessageModel = mongoose.model('Message', MessageSchema);
-module.exports = MessageModel; */
-
-/* const mongoose = require("mongoose");
-
-const MessageSchema = new mongoose.Schema({
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    text: String,
-    file: String,
-    createdAt: { type: Date, default: Date.now }, // Manually define createdAt field
-    updatedAt: { type: Date, default: Date.now } // Manually define updatedAt field
-});
-
-const MessageModel = mongoose.model('Message', MessageSchema);
-module.exports = MessageModel; */

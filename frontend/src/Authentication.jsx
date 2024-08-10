@@ -41,24 +41,18 @@ const Register = () => {
             setErrorMessage("");
         }
     }
-    const mainstyle = {
-        fontFamily: "'Major Mono Display', monospace",
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-    }
+
 
 
     return (
         <div className="bg-[#f0efec] h-screen flex  items-center justify-center ">
             <div className="w-1/2 hidden lg:flex items-center justify-center  h-full border-r-2 bg-[#1d1d1d] border-[#292929]">
-                <div style={mainstyle} className=" flex   text-[#f0efec]      lg:text-6xl"
+                <div className=" flex  kktitle text-[#f0efec]      lg:text-6xl"
                 >KASHITOKARU</div>
             </div>
             <div className="w-1/2  flex flex-col items-center justify-center ">
                 <div className='flex flex-col items-center justify-center w-full  '>
-                    <div style={mainstyle} className="text-3xl text-[#292929]"
+                    <div className="text-3xl kktitle text-[#292929]"
                     >KASHITOKARU</div>
                     <div className="border-2 mt-[50px] border-[#323232] p-2 text-center rounded-3xl px-4 w-[250px] flex items-center justify-center cursor-pointer"> 
                         <div className="mr-5 ml-[-5px] font-semibold  text-xl">G</div>

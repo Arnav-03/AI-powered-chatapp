@@ -159,9 +159,7 @@ const Chat = () => {
         const day = createdAt.toLocaleDateString('en-US');
         const time = createdAt.toLocaleTimeString('en-US');
 
-        // Check if there is a file
         if (file) {
-            // Send the file message
             ws.send(JSON.stringify({
                 day,
                 time,
