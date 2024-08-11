@@ -12,6 +12,7 @@ import * as themes from '../chat/Colors'
 import Search from './Search';
 import FilePreview from './FilePreview';
 import { useFileContext } from '../context/FileContext';
+import AI from './ai/AI';
 
 
 function Chats() {

@@ -13,6 +13,10 @@ import xlsx from "../assets/xlsx.png";
 import csv from "../assets/csv.png";
 import deletefile from "../assets/remove1.png"
 import Uploadfile from './Uploadfile';
+import back1 from "../assets/back1.png";
+import backb from "../assets/backb.png";
+import backw from "../assets/backw.png";
+import Options from './Options';
 
 function Chat({ id, messages, selectedUser }) {
   const endOfMessagesRef = useRef(null);
@@ -73,7 +77,7 @@ function Chat({ id, messages, selectedUser }) {
     const time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     return { day, time };
   }
-  function getImageForFileType(file,link) {
+  function getImageForFileType(file, link) {
     // Check if file is a string
     if (typeof file !== 'string') {
       return undefinedFIle; // Return a default image or placeholder if file is not a string
@@ -98,6 +102,9 @@ function Chat({ id, messages, selectedUser }) {
       return undefinedFIle; // Return a default image or placeholder if file type is unknown
     }
   }
+  const [showoptions, setshowoptions] = useState(false)
+  const [optionid, setoptionid] = useState(null)
+  const [rotateicon, setrotateicon] = useState(false)
 
   return (
     <div ref={chatContainerRef} className='flex-grow overflow-auto h-full border-t-2 p-1'>
@@ -117,39 +124,69 @@ function Chat({ id, messages, selectedUser }) {
           }
 
           return (
-            <div className={message.sender === id ? 'text-right' : 'text-left'} key={message._id}>
+
+            <div className="">
+
+              <div className={message.sender === id ? 'text-right' : 'text-left'} key={message._id}>
+
                 {fileInfo && (
                   <div>
-                    <div className={`underline flex ${message.sender===id?"justify-end":"justify-start"} text-center italic cursor-pointer`}>
+                    <div className={`underline flex ${message.sender === id ? "justify-end" : "justify-start"} text-center italic cursor-pointer`}>
                       <a target='_blank' href={fileInfo.link} rel="noopener noreferrer">
                         <img
                           className='h-[100px] w-auto  m-0 p-0 rounded-xl'
-                          src={getImageForFileType(fileInfo.name,fileInfo.link)}
+                          src={getImageForFileType(fileInfo.name, fileInfo.link)}
                           alt='File preview'
                         />
                       </a>
                     </div>
                   </div>
                 )}
-              <div
-                className={`py-1 px-6 m-[1px] max-w-[70%] rounded-3xl inline-block font-medium ${message.sender === id ? "bg-[#b8b7b7] text-[#000000]" : "bg-[#292929] text-[#fffcfc]"}`}
-                key={index}
-              >
-              
-                <div className="inline-block text-justify font-sans sm:text-base md:text-md break-words max-w-[100%]">
-                  {message.text}
-                  {/* {!message.file && (
-                  <div>
-                    <div className="text-[10px] text-[#071b09] ">
-                      {formatTimestamp(message.createdAt) ? '' : (message.time ? ` ${message.time}` : (message.time = getCurrentTimestamp().time))}
+                <div
+                  className={`py-1 px-6 m-[1px] max-w-[70%] rounded-3xl inline-block font-medium ${message.sender === id ? "bg-[#b8b7b7] text-[#000000]" : "bg-[#4b4b4b] text-[#fffcfc]"}`}
+                  key={index}
+                >
+
+                  <div className=" flex flex-col text-justify font-sans sm:text-base md:text-[15px] break-words max-w-[100%]">
+                    <div className="">
+                      {message.text}
                     </div>
-                    <div className="text-[10px] border-2 m-0 p-0 text-[#071b09] ">
-                      {formatTimestamp(message.createdAt)}
+                    <div className={` flex gap-1  ${message.sender === id ? " " : "flex-row-reverse "} justify-between `}>
+                      <div className="  rounded-full p-1">
+
+                        <img onClick={()=>{
+
+                          if(message._id===optionid ){
+                            setshowoptions(!showoptions);
+                          }else{
+                          setshowoptions(true);
+                          setoptionid(message._id);            
+
+                          }
+                        }} className={` cursor-pointer h-4 ${rotateicon && message._id===optionid ?"rotate-[90deg]":"rotate-[-90deg] "} `} src={message.sender === id ? backb : backw} alt="" />
+                      </div>
+
+
+                      <div className={`${message.sender === id ? "text-[#dee6df] " : "text-[#071b09]"} text-[10px]     `}>
+                        {formatTimestamp(message.createdAt) ? '' : (message.time ? ` ${message.time}` : (message.time = getCurrentTimestamp().time))}
+                      </div>
+                      <div className={`${message.sender !== id ? "text-[#bbbdbb] " : "text-[#071b09]"} text-[10px]     `}>
+                        {formatTimestamp(message.createdAt)}
+                      </div>
                     </div>
+
                   </div>
-                )} */}
                 </div>
               </div>
+              
+              {showoptions && optionid !== null && message._id === optionid ? (
+                <div className={` border-black flex ${message.sender===id?"justify-end":""}`}>
+                  <Options message={message} id={id} />
+                </div>
+              ) : null}
+              
+              
+
             </div>
           );
         }

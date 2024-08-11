@@ -376,6 +376,7 @@ app.post('/api/register', async (req, res) => {
         const createdUser = await User.create({
             username: username,
             password: hashedPassword,
+            email:username,
         });
 
         jwt.sign({ userId: createdUser._id, username }, jwtSecret, {}, (err, token) => {
