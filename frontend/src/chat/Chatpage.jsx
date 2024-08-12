@@ -328,7 +328,7 @@ function Chats() {
                             <FilePreview sendMessage={sendMessage} name={selectedUserName} />
                         )}
                         {!showfiless && (
-                            <div className="h-[75px] border-2 border-t-0 border-[#292929]">
+                            <div className="h-[75px] fixed bottom-0 border-2 border-t-0 border-[#292929]">
                                 <MessageBox setshowfiless={setshowfiless} sendMessage={sendMessage} newMessage={newMessage} setnewMessage={setnewMessage} />
                             </div>
                         )}
