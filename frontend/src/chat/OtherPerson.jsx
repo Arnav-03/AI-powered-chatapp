@@ -38,7 +38,7 @@ function OtherPerson({ selectedUserName, handleViewChange, setselectedUser }) {
       </div>
       <div className="flex w-full ml-10">
         {profileImage && (
-          <div className="rounded-full border-2 overflow-hidden h-14 w-14 min-w-14 max-w-14  min-h-14 max-h-14 ">
+          <div className="rounded-full flex items-center justify-center border-2 overflow-hidden h-14 w-14 min-w-14 max-w-14  min-h-14 max-h-14 ">
             <img className='h-14 w-14 min-w-14 max-w-14  min-h-14 max-h-14' src={profileImage} alt="" />
           </div>
         )}
