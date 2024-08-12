@@ -29,7 +29,7 @@ function OtherPerson({ selectedUserName, handleViewChange, setselectedUser }) {
   }, [usern]);
 
   return (
-    <div className=' flex items-center md:border-l-2 border-[#f0efec] text-[#f0efec]  w-full h-[90px] bg-[#292929]'>
+    <div className=' flex fixed top-0 items-center md:border-l-2 border-[#f0efec] text-[#f0efec] w-full h-[90px] bg-[#292929]'>
       <div onClick={() => {
         handleViewChange('first');
         setselectedUser(null);

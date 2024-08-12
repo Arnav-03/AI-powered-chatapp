@@ -318,7 +318,7 @@ function Chats() {
                                 selectedUserName={selectedUserName} />
                         </div>
 
-                        <div className="h-full border-2 overflow-hidden border-[#292929] border-l-2">
+                        <div className="h-full border-2 mt-[90px] overflow-hidden border-[#292929] border-l-2">
                             <Chat id={id} messages={messages} selectedUser={selectedUser} />
                         </div>
                         {showAIoptions && (
