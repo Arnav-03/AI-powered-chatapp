@@ -366,21 +366,95 @@ app.post('/api/login', async (req, res) => {
     }
 });
  */
+app.post('/api/getuserimage', async (req, res) => {
+    try {
+        const { username } = req.body;
+
+        // Find the user by username
+        const user = await User.findOne({ username });
+
+        if (user) {
+            // Return the user's image
+            return res.status(200).json({ image: user.image });
+        } else {
+            // If the user is not found
+            return res.status(404).json({ error: 'User not found' });
+        }
+    } catch (err) {
+        console.error('Error in /api/getuserimage:', err.message);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 app.post('/api/logout', (req, res) => {
     res.cookie('token', '', { sameSite: 'none', secure: true }).json('logout');
 });
+const generateRandomUsername = (baseUsername) => {
+    const randomSuffix = Math.floor(Math.random() * 10000); // Generate a random number between 0 and 9999
+    return `${baseUsername}${randomSuffix}`;
+};
 
-async function checkUserExists(username) {
-    try {
-        const response = await axios.get(`/api/checkuser/${username}`);
-        return response.data.exists;
-    } catch (error) {
-        console.error("Error checking user existence:", error);
-        return false;
-    }
-}
 app.post('/api/googleauth', async (req, res) => {
+    try {
+        const { username, email, imageurl } = req.body;
+        let useralreadyexist = await User.findOne({ email });
+
+        if (useralreadyexist) {
+            if (!useralreadyexist.googlesignin) {
+                return res.status(400).json({ error: 'This email is associated with an account created using credentials. Please log in using your username and password.' });
+            }
+
+            // If the user exists and is a Google sign-in user, proceed with token generation
+            jwt.sign({ userId: useralreadyexist._id, username: useralreadyexist.username }, jwtSecret, {}, (err, token) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error generating token' });
+                }
+                res.cookie('token', token, { sameSite: 'none', secure: true }).json({
+                    id: useralreadyexist._id,
+                    username: useralreadyexist.username,
+                });
+            });
+        } else {
+            // Check if the username is already taken
+            let existingUsername = await User.findOne({ username });
+            let finalUsername = username;
+
+            if (existingUsername) {
+                finalUsername = generateRandomUsername(username);
+
+                // Ensure that the generated username is unique
+                while (await User.findOne({ username: finalUsername })) {
+                    finalUsername = generateRandomUsername(username);
+                }
+            }
+
+            // Create a new Google sign-in user with the final username
+            const createdUser = await User.create({
+                username: finalUsername,
+                email: email,
+                image: imageurl,
+                googlesignin: true,
+                password: "",
+            });
+
+            jwt.sign({ userId: createdUser._id, username: finalUsername }, jwtSecret, {}, (err, token) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error generating token' });
+                }
+                res.cookie('token', token, { sameSite: 'none', secure: true }).status(201).json({
+                    id: createdUser._id,
+                    username: createdUser.username
+                });
+            });
+        }
+    } catch (err) {
+        console.error('Error in /api/googleauth:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+/* app.post('/api/googleauth', async (req, res) => {
     try {
         const { username, email, imageurl } = req.body;
         const useralreadyexist = await User.findOne({ email });
@@ -424,7 +498,7 @@ app.post('/api/googleauth', async (req, res) => {
         console.error('Error in /api/googleauth:', err.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+}); */
 
 /* app.post('/api/googleauth', async (req, res) => {
     try {
@@ -576,7 +650,6 @@ wss.on('connection', (connection, req) => {
         });
     }
 
-    // Notify others about online people when a new client connects
     messageAboutOnlinePeople();
 });
 

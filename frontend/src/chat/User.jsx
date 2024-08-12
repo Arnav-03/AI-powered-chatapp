@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import axios from 'axios';
 import * as themes from '../chat/Colors';
@@ -8,6 +8,7 @@ import backarrow from '../assets/backarrow.png';
 import Setting from './Setting';
 
 function User({ username }) {
+
   const { setid, setusername } = useContext(UserContext);
   const [colortheme, setcolortheme] = useState("default_theme");
   const allThemes = themes;
@@ -16,14 +17,31 @@ function User({ username }) {
     fontFamily: "'Major Mono Display', monospace",
   };
   const usernameStyle = username?.length > 20 ? 'text-xl' : 'text-2xl';
-  const [showsetting, setshowsetting] = useState(false)
+  const [showsetting, setshowsetting] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        const response = await axios.post('/getuserimage', { username: username });
+        if (response.data.image) {
+          setProfileImage(response.data.image);
+        }
+      } catch (error) {
+      }
+    };
+
+    if (username) {
+      fetchProfileImage();
+    }
+  }, [username]);
   return (
     <div className="h-fit flex flex-col items-center justify-center w-full bg-[#292929] text-[#f0efec] relative">
       <div  className="text-2xl kktitle">KASHITOKARU</div>
       <div className='welcome text-xl w-full flex items-center justify-center'>
         <div className={`welcome ${usernameStyle} flex items-center px-10 border-[#afaeae]  w-full gap-4 justify-between p-2`}>
           <div className="flex items-center gap-2 overflow-hidden">
-            <img className='h-12 border-2 border-[#f0efec] rounded-full' src={account} alt="profile" />
+            <img className='h-12 w-12 max-w-12 min-w-12 border-2 border-[#f0efec] rounded-full' src={profileImage?profileImage:account} alt="profile" />
             <div>{username?username:"no found"}</div>
           </div>
           <img onClick={()=>setshowsetting(!showsetting)} className='h-10 cursor-pointer rounded-full' src={!showsetting?setting:backarrow} alt="profile" />
