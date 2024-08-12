@@ -11,6 +11,8 @@ const Message = require('./models/Message');
 const User = require('./models/User');
 const fs = require('fs');
 mongoose.connect(process.env.MONGO_URL);
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const axios = require("axios");
 
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
@@ -18,7 +20,6 @@ const app = express();
 
 app.use('/api/uploads', express.static(__dirname + '/uploads/'));
 
-console.log(process.env.CLIENT_URL);
 
 const corsOptions = {
     credentials: true,
@@ -29,52 +30,166 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
-/* async function getUserDataFromRequest(req) {
+
+const geminikey=process.env.GEMINI_KEY
+async function generatetextreply(userprompt, selectedAItool, texttochange) {
+    const genAI = new GoogleGenerativeAI(geminikey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    let prompt = "";
+
+    if (selectedAItool === "Auto Reply") {
+        if (userprompt === "") {
+            prompt = `I got the text '${texttochange}'. I want to reply to it. Make a suitable reply.`;
+        } else {
+            prompt = `I got the text '${texttochange}'. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Now give me a  reply.`;
+        }
+
+    } else if (selectedAItool === "Summarize") {
+        prompt = `Please summarize the following text: '${texttochange}'.`;
+    } else {
+        return "Invalid AI tool selected";
+    }
+
+
+    try {
+        const generatedText = await model.generateContent(prompt);
+        const responseText = generatedText.response.text();
+
+
+        if (responseText) {
+            return responseText;
+        } else {
+            return "No content returned from the AI model";
+        }
+    } catch (error) {
+        console.error("Error generating content:", error);
+        return "Error generating content";
+    }
+}
+
+async function generateimagereply(userprompt, selectedAItool, imagetochange) {
+
+    const genAI = new GoogleGenerativeAI(geminikey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompts = {
+        "Reply Image": userprompt
+            ? `I got a image. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Now give me a reply.`
+            : "I got a image. I want to reply to it. Make a suitable reply.",
+        "Describe Image": userprompt
+            ? `Can you summarize this image as a bulleted list? Additionally, I want the summary to have features such as '${userprompt}'. Now give me a  summary. Don't exceed 200 words.`
+            : "Can you summarize this image as a bulleted list? Don't exceed 200 words.",
+    };
+
+    const prompt = prompts[selectedAItool];
+    if (!prompt) {
+        return "Please select a valid tool";
+    }
+
+   try {
+        const response = await axios.get(imagetochange, { responseType: "arraybuffer" });
+        const image = {
+            inlineData: {
+                data: Buffer.from(response.data).toString("base64"),
+                mimeType: "image/png",
+            },
+        };
+
+        const result = await model.generateContent([prompt, image]);
+        const generatedText = result.response.text();
+
+        return generatedText ? generatedText : "No content returned from the AI model";
+    } catch (error) {
+        console.error("Error generating content:", error);
+        return "Error generating content";
+    }  
+}
+async function generatefilereply(userprompt, selectedAItool, filetochange) {
+
+    const genAI = new GoogleGenerativeAI(geminikey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompts = {
+        "Reply Pdf": userprompt
+            ? `I got a file. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Now give me a reply.`
+            : "I got a file. I want to reply to it. Make a suitable reply.",
+        "Describe Pdf": userprompt
+            ? `Can you summarize this document as a bulleted list? Additionally, I want the summary to have features such as '${userprompt}'. Now give me a summary. Don't exceed 200 words.`
+            : "Can you summarize this document as a bulleted list? Don't exceed 200 words.",
+    };
+
+    const prompt = prompts[selectedAItool];
+    if (!prompt) {
+        return "Please select a valid tool";
+    }
+
+    try {
+        const response = await axios.get(filetochange, { responseType: "arraybuffer" });
+        const image = {
+            inlineData: {
+                data: Buffer.from(response.data).toString("base64"),
+                mimeType: "application/pdf",
+            },
+        };
+
+        const result = await model.generateContent([prompt, image]);
+        const generatedText = result.response.text();
+
+        return generatedText ? generatedText : "No content returned from the AI model";
+    } catch (error) {
+        console.error("Error generating content:", error);
+        return "Error generating content";
+    } 
+}
+
+app.post('/api/getresponsefromAI', async (req, res) => {
+    try {
+        const { userprompt, selectedAItool, texttochange, imagetochange, filetochange } = req.body;
+        if (imagetochange && imagetochange.length > 0) {
+            const reply = await generateimagereply(userprompt, selectedAItool, imagetochange);
+            res.json({ reply });
+        } else if (filetochange && filetochange.length > 0) {
+            const reply = await generatefilereply(userprompt, selectedAItool, filetochange);
+            res.json({ reply });
+        } else {
+            const reply = await generatetextreply(userprompt, selectedAItool, texttochange);
+            res.json({ reply });
+        }
+
+    } catch (error) {
+        console.log('Error fetching messages:', error);
+        res.status(500).json({ error: 'Error fetching response from AI' });
+    }
+});
+
+async function getUserDataFromRequest(req) {
     return new Promise((resolve, reject) => {
         const token = req.cookies?.token;
         if (token) {
             jwt.verify(token, jwtSecret, {}, (err, userData) => {
-                if (err) throw err;
+                if (err) {
+                    console.log('Token verification error:', err);
+                    reject('Invalid token');
+                    return;
+                }
                 resolve(userData);
             });
         } else {
-            reject('no token');
+            console.log('No token provided');
+            reject('No token provided');
         }
-    })
-} */
-    async function getUserDataFromRequest(req) {
-        return new Promise((resolve, reject) => {
-            const token = req.cookies?.token;
-            if (token) {
-                jwt.verify(token, jwtSecret, {}, (err, userData) => {
-                    if (err) {
-                        console.log('Token verification error:', err);
-                        reject('Invalid token');
-                        return;
-                    }
-                    resolve(userData);
-                });
-            } else {
-                console.log('No token provided');
-                reject('No token provided');
-            }
-        });
-    }
-    
+    });
+}
+
+
+
+
 app.get('/api/test', (req, res) => {
     res.json('test hehhee');
 });
 
-/* app.get('/api/messages/:userId', async (req, res) => {
-    const { userId } = req.params;
-    const userData = await getUserDataFromRequest(req);
-    const ourUSerId = userData.userId;
-    const messages = await Message.find({
-        sender: { $in: [userId, ourUSerId] },
-        recipient: { $in: [userId, ourUSerId] },
-    }).sort({ createdAt: 1 });
-    res.json(messages);
-}); */
+
 app.get('/api/messages/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -104,7 +219,7 @@ app.get('/api/lastmessage/:userId', async (req, res) => {
         })
         .sort({ createdAt: -1 }) // Sort in descending order
         .limit(1);
-        
+
     res.json(lastMessage);
 });
 
@@ -174,17 +289,6 @@ app.get('/api/allpeople', async (req, res) => {
     }
 });
 
-/* app.get('/api/profile', (req, res) => {
-    const token = req.cookies?.token;
-    if (token) {
-        jwt.verify(token, jwtSecret, {}, (err, userData) => {
-            if (err) throw err;
-            res.json(userData);
-        });
-    } else {
-        res.status(401).json('no token');
-    }
-}); */
 app.get('/api/profile', (req, res) => {
     const token = req.cookies?.token;
     if (token) {
@@ -303,7 +407,7 @@ app.post('/api/googleauth', async (req, res) => {
                 email: email,
                 image: imageurl,
                 googlesignin: true,
-                password: "", 
+                password: "",
             });
 
             jwt.sign({ userId: createdUser._id, username }, jwtSecret, {}, (err, token) => {
@@ -376,7 +480,7 @@ app.post('/api/register', async (req, res) => {
         const createdUser = await User.create({
             username: username,
             password: hashedPassword,
-            email:username,
+            email: username,
         });
 
         jwt.sign({ userId: createdUser._id, username }, jwtSecret, {}, (err, token) => {
@@ -413,17 +517,15 @@ wss.on('connection', (connection, req) => {
                     const { userId, username } = userData;
                     connection.userId = userId;
                     connection.username = username;
-                    console.log('User connected:', userId, username); // Log successful connection
 
                     // Notify others about online people
                     messageAboutOnlinePeople();
                 });
             } else {
-                console.error('Token not found in cookie string.');
             }
         } else {
-            console.error('Token cookie string not found.');
-        }
+/*             console.error('Token cookie string not found.');
+ */        }
     } else {
         console.error('No cookies found in headers.');
     }
@@ -436,7 +538,6 @@ wss.on('connection', (connection, req) => {
             clearInterval(connection.timer);
             connection.terminate();
             messageAboutOnlinePeople();
-            console.log('dead');
         }, 1000);
     }, 5000);
 
@@ -447,14 +548,13 @@ wss.on('connection', (connection, req) => {
     connection.on('message', async (message) => {
         const messageData = JSON.parse(message.toString());
         const { recipient, text, file } = messageData;
-       
-        console.log(connection.userId);
+
         if (recipient && (text || file)) {
             const messageDoc = await Message.create({
                 sender: connection.userId,
                 recipient,
                 text,
-                file: file ? file: null,
+                file: file ? file : null,
             });
             [...wss.clients]
                 .filter(c => c.userId === recipient)
@@ -462,7 +562,7 @@ wss.on('connection', (connection, req) => {
                     text,
                     sender: connection.userId,
                     recipient,
-                    file: file ? file: null,
+                    file: file ? file : null,
                     _id: messageDoc._id,
                 })));
         }
@@ -480,4 +580,3 @@ wss.on('connection', (connection, req) => {
     messageAboutOnlinePeople();
 });
 
-console.log("app running on 4040");

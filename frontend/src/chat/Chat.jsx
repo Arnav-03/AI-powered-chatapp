@@ -121,13 +121,15 @@ function Chat({ id, messages, selectedUser }) {
             }
           } else {
             fileInfo = message.file;
-          }
+          }   
+          
 
           return (
 
-            <div className="">
+            <div key={message._id} className="">
+              
 
-              <div className={message.sender === id ? 'text-right' : 'text-left'} key={message._id}>
+              <div  className={message.sender === id ? 'text-right' : 'text-left'} key={message._id}>
 
                 {fileInfo && (
                   <div>
@@ -151,7 +153,7 @@ function Chat({ id, messages, selectedUser }) {
                     <div className="">
                       {message.text}
                     </div>
-                    <div className={` flex gap-1  ${message.sender === id ? " " : "flex-row-reverse "} justify-between `}>
+                    <div className={` flex gap-1  ${message.sender === id ? " " : "flex-row-reverse "}  justify-between `}>
                       <div className="  rounded-full p-1">
 
                         <img onClick={()=>{
@@ -181,7 +183,7 @@ function Chat({ id, messages, selectedUser }) {
               
               {showoptions && optionid !== null && message._id === optionid ? (
                 <div className={` border-black flex ${message.sender===id?"justify-end":""}`}>
-                  <Options message={message} id={id} />
+                  <Options setshowoptions={setshowoptions} message={message} id={id} />
                 </div>
               ) : null}
               

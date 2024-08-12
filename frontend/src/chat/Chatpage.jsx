@@ -13,6 +13,7 @@ import Search from './Search';
 import FilePreview from './FilePreview';
 import { useFileContext } from '../context/FileContext';
 import AI from './ai/AI';
+import { AIContext } from '../context/AIContext';
 
 
 function Chats() {
@@ -27,6 +28,7 @@ function Chats() {
     const [People, setPeople] = useState({});
     const [colortheme, setcolortheme] = useState("default_theme");
     const allThemes = themes;
+    const {showAIoptions}=useContext(AIContext);
 
     useEffect(() => {
         const handleResize = () => {
@@ -56,7 +58,6 @@ function Chats() {
         ws.addEventListener('message', handlemessage);
         ws.addEventListener('close', () => {
             setTimeout(() => {
-                console.log('trying to reconnect');
                 connectTOWs();
             }, 1000);
         });
@@ -294,7 +295,7 @@ function Chats() {
             {isLargeScreen || currentView === 'first' ? (
                 <div className="w-full md:w-1/3 h-full flex flex-col items-center justify-center ">
                     <User username={username} />
-                    <Search handleSearch={handleSearch}
+                    <Search setSearchTerm={setSearchTerm} setselectedUserName={setselectedUserName} handleSearch={handleSearch}
                         searchTerm={searchTerm} handleViewChange={handleViewChange} setselectedUser={setselectedUser} searchResults={searchResults} />
                     <div className="h-full w-full overflow-hidden ">
                         <PeopleList
@@ -314,12 +315,15 @@ function Chats() {
                     <div className="w-full  md:w-2/3 h-full flex flex-col relative">
                         <div className="">
                             <OtherPerson handleViewChange={handleViewChange} setselectedUser={setselectedUser}
-                                name={selectedUserName} />
+                                selectedUserName={selectedUserName} />
                         </div>
 
                         <div className="h-full border-2 overflow-hidden border-[#292929] border-l-2">
                             <Chat id={id} messages={messages} selectedUser={selectedUser} />
                         </div>
+                        {showAIoptions && (
+                            <AI setnewMessage={setnewMessage}/>
+                        )}
                         {showfiless && (
                             <FilePreview sendMessage={sendMessage} name={selectedUserName} />
                         )}

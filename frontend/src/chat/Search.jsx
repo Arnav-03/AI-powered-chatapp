@@ -4,7 +4,7 @@ import account from '../../src/assets/account.png';
 import search from '../../src/assets/search1.png';
 
 
-function Search({ handleSearch, searchTerm, handleViewChange, setselectedUser, searchResults }) {
+function Search({setSearchTerm, handleSearch, searchTerm, handleViewChange, setselectedUser, searchResults,setselectedUserName }) {
     const [cross, setCross] = useState(false);
     const handleclick = () => {
         setCross(!cross);
@@ -38,6 +38,8 @@ function Search({ handleSearch, searchTerm, handleViewChange, setselectedUser, s
                                 key={user._id}
                                 onClick={() => {
                                     setselectedUser(user._id);
+                                    setselectedUserName(user.username);
+                                    setSearchTerm('');
                                     handleViewChange('second');
                                 }}
                             >

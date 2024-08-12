@@ -6,6 +6,7 @@ import axios from 'axios';
 import Chatpage from './chat/Chatpage';
 import { FileProvider } from './context/FileContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AIContextProvider } from './context/AIContext';
 
 function App() {
   axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
@@ -13,7 +14,9 @@ function App() {
   return (
     <div className="h-screen">
     <BrowserRouter>
+
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT}>
+    <AIContextProvider>
     <UsercontextProvider>
       <FileProvider>
       <Routes>
@@ -23,6 +26,7 @@ function App() {
       </Routes>
       </FileProvider>
       </UsercontextProvider>
+      </AIContextProvider>
       </GoogleOAuthProvider>
     </BrowserRouter>
     </div>

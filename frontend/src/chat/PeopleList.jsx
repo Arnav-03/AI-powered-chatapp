@@ -1,6 +1,6 @@
 import React from "react";
 
-function PeopleList({selectedUser, People, lastMessageTimes, setselectedUser, handleViewChange }) {
+function PeopleList({  selectedUser, People, lastMessageTimes, setselectedUser, handleViewChange }) {
   return (
     <div className="w-full h-full bg-[#f0efec]  overflow-scroll overflow-x-hidden">
       {Object.values(People).map((user) => (
