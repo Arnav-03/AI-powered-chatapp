@@ -40,17 +40,16 @@ async function generatetextreply(userprompt, selectedAItool, texttochange) {
 
     if (selectedAItool === "Auto Reply") {
         if (userprompt === "") {
-            prompt = `I got the text '${texttochange}'. I want to reply to it. Make a suitable reply.`;
+            prompt = `I got the text '${texttochange}'. I want to reply to it. Provide a single, suitable reply.`;
         } else {
-            prompt = `I got the text '${texttochange}'. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Now give me a  reply.`;
+            prompt = `I got the text '${texttochange}'. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Provide a single, suitable reply.`;
         }
-
     } else if (selectedAItool === "Summarize") {
         prompt = `Please summarize the following text: '${texttochange}'.`;
     } else {
         return "Invalid AI tool selected";
     }
-
+    
 
     try {
         const generatedText = await model.generateContent(prompt);
@@ -72,7 +71,7 @@ async function generateimagereply(userprompt, selectedAItool, imagetochange) {
 
     const genAI = new GoogleGenerativeAI(geminikey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+/* 
     const prompts = {
         "Reply Image": userprompt
             ? `I got a image. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Now give me a reply.`
@@ -81,7 +80,16 @@ async function generateimagereply(userprompt, selectedAItool, imagetochange) {
             ? `Can you summarize this image as a bulleted list? Additionally, I want the summary to have features such as '${userprompt}'. Now give me a  summary. Don't exceed 200 words.`
             : "Can you summarize this image as a bulleted list? Don't exceed 200 words.",
     };
-
+ */
+    const prompts = {
+        "Reply Image": userprompt
+            ? `I got an image. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Provide a single, suitable reply.`
+            : "I got an image. I want to reply to it. Provide a single, suitable reply.",
+        "Describe Image": userprompt
+            ? `Can you summarize this image as a bulleted list? Additionally, I want the summary to have features such as '${userprompt}'. Provide a concise summary in a single response. Don't exceed 200 words.`
+            : "Can you summarize this image as a bulleted list? Provide a concise summary in a single response. Don't exceed 200 words.",
+    };
+    
     const prompt = prompts[selectedAItool];
     if (!prompt) {
         return "Please select a valid tool";
@@ -109,7 +117,7 @@ async function generatefilereply(userprompt, selectedAItool, filetochange) {
 
     const genAI = new GoogleGenerativeAI(geminikey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+/* 
     const prompts = {
         "Reply Pdf": userprompt
             ? `I got a file. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Now give me a reply.`
@@ -117,7 +125,16 @@ async function generatefilereply(userprompt, selectedAItool, filetochange) {
         "Describe Pdf": userprompt
             ? `Can you summarize this document as a bulleted list? Additionally, I want the summary to have features such as '${userprompt}'. Now give me a summary. Don't exceed 200 words.`
             : "Can you summarize this document as a bulleted list? Don't exceed 200 words.",
+    }; */
+    const prompts = {
+        "Reply Pdf": userprompt
+            ? `I got a file. I want to reply to it. Additionally, I want the reply to have features such as '${userprompt}'. Provide a single, suitable reply.`
+            : "I got a file. I want to reply to it. Provide a single, suitable reply.",
+        "Describe Pdf": userprompt
+            ? `Can you summarize this document as a bulleted list? Additionally, I want the summary to have features such as '${userprompt}'. Provide a concise summary in a single response. Don't exceed 200 words.`
+            : "Can you summarize this document as a bulleted list? Provide a concise summary in a single response. Don't exceed 200 words.",
     };
+    
 
     const prompt = prompts[selectedAItool];
     if (!prompt) {
