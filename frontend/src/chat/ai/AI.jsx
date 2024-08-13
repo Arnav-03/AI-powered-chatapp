@@ -36,7 +36,9 @@ function AI({ setnewMessage }) { // Add setnewMessage as a prop
     }
   }, [resultofAI]);
 
+  
   const handleReset = () => {
+
     setresultofAI("");
     setshowresult(false);
     setLoading(false);
